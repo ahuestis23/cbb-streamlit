@@ -122,3 +122,60 @@ with tabs[1]:
             file_name=f"{selected_team_ast}_assists_projections.csv",
             mime="text/csv"
         )
+###########################################
+# TAB 4: Rebounds Projections
+###########################################
+with tabs[1]:
+    st.header("Team Rebounds Projections")
+
+    @st.cache_data
+    def load_input_data_ast():
+        # Load your model input CSV file for assists projections
+        df = pd.read_csv("model_inputs_trb.csv")
+        return df
+
+    @st.cache_resource
+    def load_model_ast():
+        # Load your trained model for assists
+        model = joblib.load("gbr_model_reb.pkl")
+        return model
+
+    df_input_ast = load_input_data_ast()
+    model_ast = load_model_ast()
+
+    # Define the feature columns expected by the assists model
+    feature_columns_ast = [
+        'weighted_trb', 'kalman_trb', 
+        'team_proj', 'team_oe', 'team_de', 
+        'opp_proj', 'opp_oe', 'opp_de'
+    ]
+
+    # Check for missing features
+    missing_features_ast = set(feature_columns_ast) - set(df_input_ast.columns)
+    if missing_features_ast:
+        st.error(f"Missing features in assists input data: {missing_features_ast}")
+    else:
+        # Create a select box to choose a team for assists projections
+        teams_ast = sorted(df_input_ast["team"].unique())
+        selected_team_ast = st.selectbox("Select a Team for Rebounds", teams_ast)
+
+        # Filter the data for the selected team
+        df_team_ast = df_input_ast[df_input_ast["team"] == selected_team_ast].copy()
+
+        # Generate predictions for players on the selected team for assists
+        predictions_ast = model_ast.predict(df_team_ast[feature_columns_ast])
+        df_team_ast["predicted_trb"] = predictions_ast
+
+        # Display the projections for the selected team
+        st.subheader(f"Player Projections for {selected_team_ast} (Rebounds)")
+        display_cols_ast = ['player', 'team', 'predicted_trb'] + feature_columns_ast
+        st.dataframe(df_team_ast[display_cols_ast])
+
+        # Optionally, add a download button for the assists projections
+        csv_ast = df_team_ast.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Download Rebounds Projections as CSV",
+            data=csv_ast,
+            file_name=f"{selected_team_ast}_assists_projections.csv",
+            mime="text/csv"
+        )
