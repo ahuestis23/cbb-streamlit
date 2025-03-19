@@ -123,9 +123,9 @@ with tabs[1]:
             mime="text/csv"
         )
 ###########################################
-# TAB 4: Rebounds Projections
+# TAB 3: Rebounds Projections
 ###########################################
-with tabs[1]:
+with tabs[2]:
     st.header("Team Rebounds Projections")
 
     @st.cache_data
@@ -153,7 +153,7 @@ with tabs[1]:
     # Check for missing features
     missing_features_ast = set(feature_columns_ast) - set(df_input_ast.columns)
     if missing_features_ast:
-        st.error(f"Missing features in assists input data: {missing_features_ast}")
+        st.error(f"Missing features in rebounds input data: {missing_features_ast}")
     else:
         # Create a select box to choose a team for assists projections
         teams_ast = sorted(df_input_ast["team"].unique())
