@@ -1,21 +1,20 @@
 import streamlit as st
 import pandas as pd
 import joblib
+from datetime import date
 
 st.title("Team Projections")
 
-# Load one dataset to determine available teams (assumes teams are the same across stats)
+# Create four tabs: Points, Assists, Rebounds, and Notebook
+tabs = st.tabs(["Points Projections", "Assists Projections", "Rebounds Projections", "Notebook"])
+
+# Global team selection (applies to the first three tabs)
 @st.cache_data
 def load_input_data_pts():
     return pd.read_csv("model_input.csv")
 df_points = load_input_data_pts()
 teams_all = sorted(df_points["team"].unique())
-
-# Create a select box for team selection outside of the tabs so it applies globally
 selected_team = st.selectbox("Select a Team", teams_all)
-
-# Create three tabs: Points, Assists, Rebounds
-tabs = st.tabs(["Points Projections", "Assists Projections", "Rebounds Projections"])
 
 ###########################################
 # TAB 1: Points Projections
@@ -41,14 +40,11 @@ with tabs[0]:
         'team_proj', 'team_oe', 'team_de', 
         'opp_proj', 'opp_oe', 'opp_de'
     ]
-
     missing_features_pts = set(feature_columns_pts) - set(df_input_pts.columns)
     if missing_features_pts:
         st.error(f"Missing features in points input data: {missing_features_pts}")
     else:
-        # Use the global selected_team
         df_team_pts = df_input_pts[df_input_pts["team"] == selected_team].copy()
-
         predictions_pts = model_pts.predict(df_team_pts[feature_columns_pts])
         df_team_pts["predicted_pts"] = predictions_pts
 
@@ -56,7 +52,6 @@ with tabs[0]:
         display_cols_pts = ['player', 'team', 'predicted_pts'] + feature_columns_pts
         st.dataframe(df_team_pts[display_cols_pts])
 
-        # Betting Lines for Points
         st.subheader("Available Betting Lines for Points")
         betting_data = pd.read_csv("odds.csv")
         betting_cols = ['date', 'player_name', 'team_name', 'market_name', 'sportsbook', 'bet_points', 'Over', 'Under']
@@ -101,13 +96,11 @@ with tabs[1]:
         'team_proj', 'team_oe', 'team_de', 
         'opp_proj', 'opp_oe', 'opp_de'
     ]
-
     missing_features_ast = set(feature_columns_ast) - set(df_input_ast.columns)
     if missing_features_ast:
         st.error(f"Missing features in assists input data: {missing_features_ast}")
     else:
         df_team_ast = df_input_ast[df_input_ast["team"] == selected_team].copy()
-
         predictions_ast = model_ast.predict(df_team_ast[feature_columns_ast])
         df_team_ast["predicted_ast"] = predictions_ast
 
@@ -158,13 +151,11 @@ with tabs[2]:
         'team_proj', 'team_oe', 'team_de', 
         'opp_proj', 'opp_oe', 'opp_de'
     ]
-
     missing_features_reb = set(feature_columns_reb) - set(df_input_reb.columns)
     if missing_features_reb:
         st.error(f"Missing features in rebounds input data: {missing_features_reb}")
     else:
         df_team_reb = df_input_reb[df_input_reb["team"] == selected_team].copy()
-
         predictions_reb = model_reb.predict(df_team_reb[feature_columns_reb])
         df_team_reb["predicted_trb"] = predictions_reb
 
@@ -190,3 +181,58 @@ with tabs[2]:
             file_name=f"{selected_team}_rebounds_projections.csv",
             mime="text/csv"
         )
+
+###########################################
+# TAB 4: Notebook
+###########################################
+with tabs[3]:
+    st.header("Play Notebook")
+
+    st.markdown("Record your plays here. Enter details and click **Add Play** to save a new entry.")
+
+    # Initialize session state to store notebook entries if not already present.
+    if "notebook" not in st.session_state:
+        st.session_state["notebook"] = []
+
+    # Create a form for adding a new play entry.
+    with st.form("notebook_form", clear_on_submit=True):
+        entry_date = st.date_input("Date", value=date.today())
+        player_name = st.text_input("Player Name")
+        team_name = st.text_input("Team")
+        book = st.text_input("Book")
+        market = st.text_input("Market")
+        line = st.text_input("Line")
+        odds = st.text_input("Odds")
+        projection = st.text_input("Projection")
+        submitted = st.form_submit_button("Add Play")
+
+        if submitted:
+            new_entry = {
+                "date": entry_date.strftime("%Y-%m-%d"),
+                "player_name": player_name,
+                "team_name": team_name,
+                "book": book,
+                "market": market,
+                "line": line,
+                "odds": odds,
+                "projection": projection
+            }
+            st.session_state["notebook"].append(new_entry)
+            st.success("Play added successfully!")
+
+    # Convert the notebook entries into a DataFrame for display.
+    if st.session_state["notebook"]:
+        df_notebook = pd.DataFrame(st.session_state["notebook"])
+        st.subheader("Recorded Plays")
+        st.dataframe(df_notebook)
+
+        # Optionally, add a download button for the notebook.
+        csv_notebook = df_notebook.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Download Notebook as CSV",
+            data=csv_notebook,
+            file_name="play_notebook.csv",
+            mime="text/csv"
+        )
+    else:
+        st.info("No plays recorded yet.")
