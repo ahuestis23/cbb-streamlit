@@ -73,7 +73,7 @@ with tabs[0]:
         # Filter betting_data for the selected team and market "Points"
         bets_points = betting_data[
             (betting_data['team_name'] == selected_team_pts) & 
-            (betting_data['market_name'].str.lower() == "Player Points")
+            (betting_data['market_name'].str.lower() == "player points")
         ]
         if bets_points.empty:
             st.info("No betting lines available for Points for this team.")
@@ -142,7 +142,7 @@ with tabs[1]:
         st.subheader("Available Betting Lines for Assists")
         bets_assists = betting_data[
             (betting_data['team_name'] == selected_team_ast) & 
-            (betting_data['market_name'].str.lower() == "Player Assists")
+            (betting_data['market_name'].str.lower() == "player assists")
         ]
         if bets_assists.empty:
             st.info("No betting lines available for Assists for this team.")
@@ -211,7 +211,7 @@ with tabs[2]:
         st.subheader("Available Betting Lines for Rebounds")
         bets_reb = betting_data[
             (betting_data['team_name'] == selected_team_reb) & 
-            (betting_data['market_name'].str.lower() == "Player Rebounds")
+            (betting_data['market_name'].str.lower() == "player rebounds")
         ]
         if bets_reb.empty:
             st.info("No betting lines available for Rebounds for this team.")
