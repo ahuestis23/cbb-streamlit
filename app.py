@@ -5,7 +5,7 @@ import joblib
 st.title("Team Projections")
 
 # Create two tabs: one for Points and one for Assists
-tabs = st.tabs(["Points Projections", "Assists Projections"])
+tabs = st.tabs(["Points Projections", "Assists Projections", "Rebounds Projections"])
 
 ###########################################
 # TAB 1: Points Projections
