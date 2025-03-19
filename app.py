@@ -4,8 +4,20 @@ import joblib
 
 st.title("Team Projections")
 
-# Create two tabs: one for Points and one for Assists
+# Create three tabs: Points, Assists, Rebounds
 tabs = st.tabs(["Points Projections", "Assists Projections", "Rebounds Projections"])
+
+# Load betting lines data once (cached)
+@st.cache_data
+def load_betting_data():
+    # Ensure betting_lines.csv is in your repo with the proper columns.
+    df_bets = pd.read_csv("betting_lines.csv")
+    # Optionally, parse the 'date' column as datetime if needed:
+    df_bets['date'] = pd.to_datetime(df_bets['date'], errors='coerce')
+    return df_bets
+
+betting_data = load_betting_data()
+betting_cols = ['date', 'player_name', 'team_name', 'market_name', 'sportsbook', 'bet_points', 'Over', 'Under']
 
 ###########################################
 # TAB 1: Points Projections
@@ -55,6 +67,18 @@ with tabs[0]:
         st.subheader(f"Player Projections for {selected_team_pts} (Points)")
         display_cols_pts = ['player', 'team', 'predicted_pts'] + feature_columns_pts
         st.dataframe(df_team_pts[display_cols_pts])
+
+        # Betting Lines for Points
+        st.subheader("Available Betting Lines for Points")
+        # Filter betting_data for the selected team and market "Points"
+        bets_points = betting_data[
+            (betting_data['team_name'] == selected_team_pts) & 
+            (betting_data['market_name'].str.lower() == "Player Points")
+        ]
+        if bets_points.empty:
+            st.info("No betting lines available for Points for this team.")
+        else:
+            st.dataframe(bets_points[betting_cols])
 
         # Optionally, add a download button for the points projections
         csv_pts = df_team_pts.to_csv(index=False).encode("utf-8")
@@ -114,6 +138,17 @@ with tabs[1]:
         display_cols_ast = ['player', 'team', 'predicted_ast'] + feature_columns_ast
         st.dataframe(df_team_ast[display_cols_ast])
 
+        # Betting Lines for Assists
+        st.subheader("Available Betting Lines for Assists")
+        bets_assists = betting_data[
+            (betting_data['team_name'] == selected_team_ast) & 
+            (betting_data['market_name'].str.lower() == "Player Assists")
+        ]
+        if bets_assists.empty:
+            st.info("No betting lines available for Assists for this team.")
+        else:
+            st.dataframe(bets_assists[betting_cols])
+
         # Optionally, add a download button for the assists projections
         csv_ast = df_team_ast.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -122,6 +157,7 @@ with tabs[1]:
             file_name=f"{selected_team_ast}_assists_projections.csv",
             mime="text/csv"
         )
+
 ###########################################
 # TAB 3: Rebounds Projections
 ###########################################
@@ -129,53 +165,64 @@ with tabs[2]:
     st.header("Team Rebounds Projections")
 
     @st.cache_data
-    def load_input_data_ast():
-        # Load your model input CSV file for assists projections
+    def load_input_data_reb():
+        # Load your model input CSV file for rebounds projections
         df = pd.read_csv("model_inputs_trb.csv")
         return df
 
     @st.cache_resource
-    def load_model_ast():
-        # Load your trained model for assists
+    def load_model_reb():
+        # Load your trained model for rebounds
         model = joblib.load("gbr_model_reb.pkl")
         return model
 
-    df_input_ast = load_input_data_ast()
-    model_ast = load_model_ast()
+    df_input_reb = load_input_data_reb()
+    model_reb = load_model_reb()
 
-    # Define the feature columns expected by the assists model
-    feature_columns_ast = [
+    # Define the feature columns expected by the rebounds model
+    feature_columns_reb = [
         'weighted_trb', 'kalman_trb', 
         'team_proj', 'team_oe', 'team_de', 
         'opp_proj', 'opp_oe', 'opp_de'
     ]
 
     # Check for missing features
-    missing_features_ast = set(feature_columns_ast) - set(df_input_ast.columns)
-    if missing_features_ast:
-        st.error(f"Missing features in rebounds input data: {missing_features_ast}")
+    missing_features_reb = set(feature_columns_reb) - set(df_input_reb.columns)
+    if missing_features_reb:
+        st.error(f"Missing features in rebounds input data: {missing_features_reb}")
     else:
-        # Create a select box to choose a team for assists projections
-        teams_ast = sorted(df_input_ast["team"].unique())
-        selected_team_ast = st.selectbox("Select a Team for Rebounds", teams_ast)
+        # Create a select box to choose a team for rebounds projections
+        teams_reb = sorted(df_input_reb["team"].unique())
+        selected_team_reb = st.selectbox("Select a Team for Rebounds", teams_reb)
 
         # Filter the data for the selected team
-        df_team_ast = df_input_ast[df_input_ast["team"] == selected_team_ast].copy()
+        df_team_reb = df_input_reb[df_input_reb["team"] == selected_team_reb].copy()
 
-        # Generate predictions for players on the selected team for assists
-        predictions_ast = model_ast.predict(df_team_ast[feature_columns_ast])
-        df_team_ast["predicted_trb"] = predictions_ast
+        # Generate predictions for players on the selected team for rebounds
+        predictions_reb = model_reb.predict(df_team_reb[feature_columns_reb])
+        df_team_reb["predicted_trb"] = predictions_reb
 
         # Display the projections for the selected team
-        st.subheader(f"Player Projections for {selected_team_ast} (Rebounds)")
-        display_cols_ast = ['player', 'team', 'predicted_trb'] + feature_columns_ast
-        st.dataframe(df_team_ast[display_cols_ast])
+        st.subheader(f"Player Projections for {selected_team_reb} (Rebounds)")
+        display_cols_reb = ['player', 'team', 'predicted_trb'] + feature_columns_reb
+        st.dataframe(df_team_reb[display_cols_reb])
 
-        # Optionally, add a download button for the assists projections
-        csv_ast = df_team_ast.to_csv(index=False).encode("utf-8")
+        # Betting Lines for Rebounds
+        st.subheader("Available Betting Lines for Rebounds")
+        bets_reb = betting_data[
+            (betting_data['team_name'] == selected_team_reb) & 
+            (betting_data['market_name'].str.lower() == "Player Rebounds")
+        ]
+        if bets_reb.empty:
+            st.info("No betting lines available for Rebounds for this team.")
+        else:
+            st.dataframe(bets_reb[betting_cols])
+
+        # Optionally, add a download button for the rebounds projections
+        csv_reb = df_team_reb.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="Download Rebounds Projections as CSV",
-            data=csv_ast,
-            file_name=f"{selected_team_ast}_assists_projections.csv",
+            data=csv_reb,
+            file_name=f"{selected_team_reb}_rebounds_projections.csv",
             mime="text/csv"
         )
