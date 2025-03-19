@@ -5,15 +5,17 @@ from datetime import date
 
 st.title("Team Projections")
 
-# Global Team Selection (applies to stat tabs)
+# Global Team Selection
+# Here, we load one of the datasets (assuming the team list is similar across datasets)
 @st.cache_data
 def load_input_data_pts():
     return pd.read_csv("model_input.csv")
+
 df_points = load_input_data_pts()
 teams_all = sorted(df_points["team"].unique())
 selected_team = st.selectbox("Select a Team", teams_all)
 
-# Create four tabs: Points, Assists, Rebounds, and Notebook
+# Create four tabs: Points, Assists, Rebounds, Notebook
 tabs = st.tabs(["Points Projections", "Assists Projections", "Rebounds Projections", "Notebook"])
 
 ###########################################
@@ -194,11 +196,9 @@ with tabs[3]:
 
     st.markdown("Record your plays here. Enter details and click **Add Play** to save a new entry.")
 
-    # Initialize session state to store notebook entries if not already present.
     if "notebook" not in st.session_state:
         st.session_state["notebook"] = []
 
-    # Create a form for adding a new play entry.
     with st.form("notebook_form", clear_on_submit=True):
         entry_date = st.date_input("Date", value=date.today())
         player_name = st.text_input("Player Name")
@@ -224,7 +224,6 @@ with tabs[3]:
             st.session_state["notebook"].append(new_entry)
             st.success("Play added successfully!")
 
-    # Convert the notebook entries into a DataFrame for display.
     if st.session_state["notebook"]:
         df_notebook = pd.DataFrame(st.session_state["notebook"])
         st.subheader("Recorded Plays")
