@@ -191,50 +191,71 @@ with tabs[2]:
 ###########################################
 # TAB 4: Notebook
 ###########################################
-with tabs[3]:
-    st.header("Play Notebook")
+st.header("Play Notebook")
 
-    st.markdown("Record your plays here. Enter details and click **Add Play** to save a new entry.")
+st.markdown("Record your plays here. Enter details and click **Add Play** to save a new entry.")
 
-    if "notebook" not in st.session_state:
-        st.session_state["notebook"] = []
+# Define the notebook CSV filename
+notebook_file = "play_notebook.csv"
 
-    with st.form("notebook_form", clear_on_submit=True):
-        entry_date = st.date_input("Date", value=date.today())
-        player_name = st.text_input("Player Name")
-        team_name = st.text_input("Team")
-        book = st.text_input("Book")
-        market = st.text_input("Market")
-        line = st.text_input("Line")
-        odds = st.text_input("Odds")
-        projection = st.text_input("Projection")
-        submitted = st.form_submit_button("Add Play")
-
-        if submitted:
-            new_entry = {
-                "date": entry_date.strftime("%Y-%m-%d"),
-                "player_name": player_name,
-                "team_name": team_name,
-                "book": book,
-                "market": market,
-                "line": line,
-                "odds": odds,
-                "projection": projection
-            }
-            st.session_state["notebook"].append(new_entry)
-            st.success("Play added successfully!")
-
-    if st.session_state["notebook"]:
-        df_notebook = pd.DataFrame(st.session_state["notebook"])
-        st.subheader("Recorded Plays")
-        st.dataframe(df_notebook)
-
-        csv_notebook = df_notebook.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="Download Notebook as CSV",
-            data=csv_notebook,
-            file_name="play_notebook.csv",
-            mime="text/csv"
-        )
+# Function to load notebook entries from CSV
+@st.cache_data(show_spinner=False)
+def load_notebook():
+    if os.path.exists(notebook_file):
+        df = pd.read_csv(notebook_file)
     else:
-        st.info("No plays recorded yet.")
+        df = pd.DataFrame(columns=["date", "player_name", "team_name", "book", "market", "line", "odds", "projection"])
+    return df
+
+# Load the notebook data
+df_notebook = load_notebook()
+
+# Create a form to add a new play
+with st.form("notebook_form", clear_on_submit=True):
+    entry_date = st.date_input("Date", value=date.today())
+    player_name = st.text_input("Player Name")
+    team_name = st.text_input("Team")
+    book = st.text_input("Book")
+    market = st.text_input("Market")
+    line = st.text_input("Line")
+    odds = st.text_input("Odds")
+    projection = st.text_input("Projection")
+    submitted = st.form_submit_button("Add Play")
+
+if submitted:
+    new_entry = {
+        "date": entry_date.strftime("%Y-%m-%d"),
+        "player_name": player_name,
+        "team_name": team_name,
+        "book": book,
+        "market": market,
+        "line": line,
+        "odds": odds,
+        "projection": projection
+    }
+    # Append the new entry to the CSV file
+    if os.path.exists(notebook_file):
+        df_existing = pd.read_csv(notebook_file)
+        df_updated = df_existing.append(new_entry, ignore_index=True)
+    else:
+        df_updated = pd.DataFrame([new_entry])
+    df_updated.to_csv(notebook_file, index=False)
+    st.success("Play added successfully!")
+    # Clear the cached notebook so the new entry is visible
+    st.cache_data.clear()
+
+# Reload and display the updated notebook
+df_notebook = load_notebook()
+if df_notebook.empty:
+    st.info("No plays recorded yet.")
+else:
+    st.subheader("Recorded Plays")
+    st.dataframe(df_notebook)
+
+    csv_notebook = df_notebook.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="Download Notebook as CSV",
+        data=csv_notebook,
+        file_name="play_notebook.csv",
+        mime="text/csv"
+    )
