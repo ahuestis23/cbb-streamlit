@@ -74,7 +74,7 @@ with tabs[1]:
     @st.cache_data
     def load_input_data_ast():
         # Load your model input CSV file for assists projections
-        df = pd.read_csv("model_input_ast.csv")
+        df = pd.read_csv("model_inputs_ast.csv")
         return df
 
     @st.cache_resource
