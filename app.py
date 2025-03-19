@@ -238,7 +238,7 @@ if submitted:
     # Append the new entry to the CSV file
     if os.path.exists(notebook_file):
         df_existing = pd.read_csv(notebook_file)
-        df_updated = df_existing.append(new_entry, ignore_index=True)
+        df_updated = pd.concat([df_existing, pd.DataFrame([new_entry])], ignore_index=True)
     else:
         df_updated = pd.DataFrame([new_entry])
     df_updated.to_csv(notebook_file, index=False)
