@@ -13,7 +13,7 @@ def load_betting_data():
     # Ensure betting_lines.csv is in your repo with the proper columns.
     df_bets = pd.read_csv("odds.csv")
     # Optionally, parse the 'date' column as datetime if needed:
-    df_bets['date'] = pd.to_datetime(df_bets['date'], errors='coerce')
+    #df_bets['date'] = pd.to_datetime(df_bets['date'], errors='coerce')
     return df_bets
 
 betting_data = load_betting_data()
