@@ -5,16 +5,16 @@ from datetime import date
 
 st.title("Team Projections")
 
-# Create four tabs: Points, Assists, Rebounds, and Notebook
-tabs = st.tabs(["Points Projections", "Assists Projections", "Rebounds Projections", "Notebook"])
-
-# Global team selection (applies to the first three tabs)
+# Global Team Selection (applies to stat tabs)
 @st.cache_data
 def load_input_data_pts():
     return pd.read_csv("model_input.csv")
 df_points = load_input_data_pts()
 teams_all = sorted(df_points["team"].unique())
 selected_team = st.selectbox("Select a Team", teams_all)
+
+# Create four tabs: Points, Assists, Rebounds, and Notebook
+tabs = st.tabs(["Points Projections", "Assists Projections", "Rebounds Projections", "Notebook"])
 
 ###########################################
 # TAB 1: Points Projections
@@ -40,10 +40,12 @@ with tabs[0]:
         'team_proj', 'team_oe', 'team_de', 
         'opp_proj', 'opp_oe', 'opp_de'
     ]
+
     missing_features_pts = set(feature_columns_pts) - set(df_input_pts.columns)
     if missing_features_pts:
         st.error(f"Missing features in points input data: {missing_features_pts}")
     else:
+        # Use the global selected_team
         df_team_pts = df_input_pts[df_input_pts["team"] == selected_team].copy()
         predictions_pts = model_pts.predict(df_team_pts[feature_columns_pts])
         df_team_pts["predicted_pts"] = predictions_pts
@@ -96,6 +98,7 @@ with tabs[1]:
         'team_proj', 'team_oe', 'team_de', 
         'opp_proj', 'opp_oe', 'opp_de'
     ]
+
     missing_features_ast = set(feature_columns_ast) - set(df_input_ast.columns)
     if missing_features_ast:
         st.error(f"Missing features in assists input data: {missing_features_ast}")
@@ -151,6 +154,7 @@ with tabs[2]:
         'team_proj', 'team_oe', 'team_de', 
         'opp_proj', 'opp_oe', 'opp_de'
     ]
+
     missing_features_reb = set(feature_columns_reb) - set(df_input_reb.columns)
     if missing_features_reb:
         st.error(f"Missing features in rebounds input data: {missing_features_reb}")
@@ -226,7 +230,6 @@ with tabs[3]:
         st.subheader("Recorded Plays")
         st.dataframe(df_notebook)
 
-        # Optionally, add a download button for the notebook.
         csv_notebook = df_notebook.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="Download Notebook as CSV",
