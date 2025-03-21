@@ -10,11 +10,11 @@ st.title("Team Projections")
 # Global Team Selection
 # Here, we load one of the datasets (assuming the team list is similar across datasets)
 @st.cache_data
-def load_input_data_pts(mod_time):
+def load_input_data_teams(mod_time):
     return pd.read_csv("model_input.csv")
 
 file_mod_time = os.path.getmtime("model_input.csv")
-df_points = load_input_data_pts(file_mod_time)
+df_points = load_input_data_teams(file_mod_time)
 
 teams_all = sorted(df_points["team"].unique())
 selected_team = st.selectbox("Select a Team", teams_all)
