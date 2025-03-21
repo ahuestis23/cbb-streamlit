@@ -94,7 +94,7 @@ with tabs[1]:
         return df
 
     file_mod_time_ast = os.path.getmtime("model_inputs_ast.csv")
-    df_input_ast = load_input_data_pts(file_mod_time_ast)
+    df_input_ast = load_input_data_ast(file_mod_time_ast)
 
     @st.cache_resource
     def load_model_ast():
@@ -152,7 +152,7 @@ with tabs[2]:
         return df
 
     file_mod_time_trb = os.path.getmtime("model_inputs_trb.csv")
-    df_input_reb = load_input_data_pts(file_mod_time_trb)
+    df_input_reb = load_input_data_reb(file_mod_time_trb)
 
     @st.cache_resource
     def load_model_reb():
