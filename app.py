@@ -33,13 +33,14 @@ with tabs[0]:
         df = pd.read_csv("model_input.csv")
         return df
 
+    file_mod_time_pts = os.path.getmtime("model_input.csv")
+    df_input_pts = load_input_data_pts(file_mod_time_pts)
+    
     @st.cache_resource
     def load_model_pts():
         model = joblib.load("gbr_model_pts.pkl")
         return model
 
-    file_mod_time = os.path.getmtime("model_input.csv")
-    df_input_points = load_input_data_pts(file_mod_time)
     model_pts = load_model_pts()
 
     feature_columns_pts = [
@@ -88,16 +89,18 @@ with tabs[1]:
     st.header("Team Assists Projections")
 
     @st.cache_data
-    def load_input_data_ast():
+    def load_input_data_ast(mod_time):
         df = pd.read_csv("model_inputs_ast.csv")
         return df
+
+    file_mod_time_ast = os.path.getmtime("model_inputs_ast.csv")
+    df_input_ast = load_input_data_pts(file_mod_time_ast)
 
     @st.cache_resource
     def load_model_ast():
         model = joblib.load("gbr_model_ast.pkl")
         return model
 
-    df_input_ast = load_input_data_ast()
     model_ast = load_model_ast()
 
     feature_columns_ast = [
@@ -144,9 +147,12 @@ with tabs[2]:
     st.header("Team Rebounds Projections")
 
     @st.cache_data
-    def load_input_data_reb():
+    def load_input_data_reb(mod_time):
         df = pd.read_csv("model_inputs_trb.csv")
         return df
+
+    file_mod_time_trb = os.path.getmtime("model_inputs_trb.csv")
+    df_input_ast = load_input_data_pts(file_mod_time_trb)
 
     @st.cache_resource
     def load_model_reb():
