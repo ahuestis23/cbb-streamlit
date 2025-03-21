@@ -60,7 +60,6 @@ kalman_results_pts = df_sorted.groupby('pid')['pts'].apply(apply_kalman_filter)
 
 kalman_projections_pts = kalman_results_pts.apply(lambda arr: arr[-1]).reset_index(name='kalman_pts')
 
-
 # Merge the weighted points projections (already computed earlier) with the Kalman projections for points
 projections = pd.merge(weighted_points, kalman_projections_pts, on='pid', how='inner')
 
