@@ -29,7 +29,7 @@ with tabs[0]:
     st.header("Team Points Projections")
 
     @st.cache_data
-    def load_input_data_pts():
+    def load_input_data_pts(mod_time):
         df = pd.read_csv("model_input.csv")
         return df
 
@@ -38,7 +38,8 @@ with tabs[0]:
         model = joblib.load("gbr_model_pts.pkl")
         return model
 
-    df_input_pts = load_input_data_pts()
+    file_mod_time = os.path.getmtime("model_input.csv")
+    df_input_points = load_input_data_pts(file_mod_time)
     model_pts = load_model_pts()
 
     feature_columns_pts = [
