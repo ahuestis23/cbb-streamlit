@@ -9,8 +9,8 @@ df = pd.read_csv('2025_merged_data.csv')
 # (Replace 'game_date' with the actual column name if different.)
 df['date'] = pd.to_datetime(df['date'])
 
-# Choose a reference date (for example, the projection date)
-reference_date = datetime(2025, 3, 19)  # update as needed
+# Choose a reference date (today)
+reference_date = datetime.today()
 
 # Calculate the number of days since each game
 df['days_since'] = (reference_date - df['date']).dt.days

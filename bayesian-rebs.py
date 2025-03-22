@@ -16,7 +16,8 @@ df['TRB'] = df['ORB'] + df['DRB']
 
 # Parse the date column
 df['date'] = pd.to_datetime(df['date'])
-reference_date = datetime(2025, 3, 19)  # update as needed
+# Choose a reference date (today)
+reference_date = datetime.today()
 df['days_since'] = (reference_date - df['date']).dt.days
 
 def compute_decay_weight(days, beta):
