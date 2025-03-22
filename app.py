@@ -4,7 +4,6 @@ import joblib
 from datetime import date
 import os
 
-
 st.title("Team Projections")
 
 # Global Team Selection
